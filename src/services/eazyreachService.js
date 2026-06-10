@@ -1,5 +1,12 @@
 import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import config from '../config.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const SUPPRESSION_FILE = path.join(__dirname, '..', '..', 'data', 'suppression_list.json');
 
 /**
  * Stage 3: Eazyreach email finder
@@ -14,6 +21,10 @@ export async function enrichEmails(leads) {
 
   console.log(`[Stage 3] Running Eazyreach enrichment for ${leads.length} leads...`);
   const enrichedLeads = [];
+
+  const suppressionList = fs.existsSync(SUPPRESSION_FILE)
+    ? JSON.parse(fs.readFileSync(SUPPRESSION_FILE, 'utf8'))
+    : [];
 
   for (const lead of leads) {
     if (!lead.linkedinUrl) {
@@ -33,17 +44,25 @@ export async function enrichEmails(leads) {
         const domain = cleanCompany.includes('.') ? cleanCompany : `${cleanCompany}.com`;
         const email = `${lead.firstName.toLowerCase()}.${lead.lastName.toLowerCase()}@${domain}`;
         
-        enrichedLeads.push({
-          ...lead,
-          verifiedEmail: email,
+        const emailLower = email.toLowerCase();
+        const domainLower = lead.company.toLowerCase();
+        const isSuppressed = suppressionList.some(item => {
+          const itemLower = item.toLowerCase();
+          return emailLower === itemLower || domainLower === itemLower || emailLower.endsWith('@' + itemLower);
         });
+
+        if (isSuppressed) {
+          console.log(`  🚨 [Suppression Check] Contact ${lead.firstName} ${lead.lastName} (${email}) matches item in global suppression list and has been blocked.`);
+        } else {
+          enrichedLeads.push({
+            ...lead,
+            verifiedEmail: email,
+          });
+        }
         continue;
       }
 
       // Real API integration
-      // Note: Since Eazyreach does not expose a public developer API documentation, 
-      // this is structured as a standard RESTful call to their proposed endpoint.
-      // Replace with your exact email finder API (e.g. Tomba, CUFinder, or Eazyreach extension endpoint)
       const response = await axios.post(
         'https://api.eazyreach.io/v1/enrich',
         {
@@ -60,16 +79,23 @@ export async function enrichEmails(leads) {
       );
 
       // Check response and extract email
-      if (response.data && response.data.email) {
-        enrichedLeads.push({
-          ...lead,
-          verifiedEmail: response.data.email,
+      const emailResolved = response.data?.email || response.data?.data?.email;
+      if (emailResolved) {
+        const emailLower = emailResolved.toLowerCase();
+        const domainLower = lead.company.toLowerCase();
+        const isSuppressed = suppressionList.some(item => {
+          const itemLower = item.toLowerCase();
+          return emailLower === itemLower || domainLower === itemLower || emailLower.endsWith('@' + itemLower);
         });
-      } else if (response.data && response.data.data && response.data.data.email) {
-        enrichedLeads.push({
-          ...lead,
-          verifiedEmail: response.data.data.email,
-        });
+
+        if (isSuppressed) {
+          console.log(`  🚨 [Suppression Check] Contact ${lead.firstName} ${lead.lastName} (${emailResolved}) matches item in global suppression list and has been blocked.`);
+        } else {
+          enrichedLeads.push({
+            ...lead,
+            verifiedEmail: emailResolved,
+          });
+        }
       } else {
         console.log(` 🔎 Email not found for ${lead.firstName} ${lead.lastName} via Eazyreach.`);
       }
@@ -80,7 +106,6 @@ export async function enrichEmails(leads) {
     } catch (error) {
       console.error(`\x1b[31m[Stage 3 Error] Failed to enrich lead ${lead.firstName} ${lead.lastName}:\x1b[0m`);
       handleEazyreachError(error);
-      // Let the pipeline proceed with other successful enrichments
     }
   }
 

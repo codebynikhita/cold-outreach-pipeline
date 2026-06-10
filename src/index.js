@@ -39,6 +39,13 @@ async function main() {
     process.exit(1);
   }
 
+  // Regex input validation for domain format
+  const DOMAIN_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\.[a-zA-Z]{2,6}$/;
+  if (!DOMAIN_REGEX.test(seedDomain)) {
+    console.error('\n\x1b[31m❌ Error: Invalid domain format. Please enter a valid domain (e.g., stripe.com).\x1b[0m');
+    process.exit(1);
+  }
+
   console.log(`\nStarting pipeline for seed domain: \x1b[36m${seedDomain}\x1b[0m\n`);
 
   try {
