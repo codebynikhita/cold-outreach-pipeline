@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OutreachFlow SaaS Dashboard</title>
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Auth Screen Overlay (Login/Signup) -->
+  <div id="auth-overlay" class="auth-overlay">
+    <div class="auth-card">
+      <div class="brand-center">
+        <i data-lucide="zap" class="logo-icon-lg animate-pulse"></i>
+        <h1>Outreach<span>Flow</span></h1>
+        <p>Automated B2B Pipeline SaaS Platform</p>
+      </div>
+
+      <!-- Login Form -->
+      <div id="login-form-container">
+        <h2>Sign In to Your Account</h2>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="login-email">Email Address</label>
+            <input type="email" id="login-email" placeholder="Enter email address" required>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" placeholder="Enter password" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg">Sign In</button>
+        </form>
+        <p class="auth-toggle-text">Don't have an account? <span id="toggle-to-signup">Sign Up</span></p>
+      </div>
+
+      <!-- Signup Form (Hidden initially) -->
+      <div id="signup-form-container" class="hidden">
+        <h2>Create a New Account</h2>
+        <form id="signup-form">
+          <div class="form-group">
+            <label for="signup-email">Email Address</label>
+            <input type="email" id="signup-email" placeholder="Create email address" required>
+          </div>
+          <div class="form-group">
+            <label for="signup-username">Username</label>
+            <input type="text" id="signup-username" placeholder="Create username" required>
+          </div>
+          <div class="form-group">
+            <label for="signup-password">Password</label>
+            <input type="password" id="signup-password" placeholder="Create password" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg">Create Account</button>
+        </form>
+        <p class="auth-toggle-text">Already have an account? <span id="toggle-to-login">Sign In</span></p>
+      </div>
+      <div id="auth-error-message" class="auth-error text-danger hidden"></div>
+    </div>
+  </div>
+
+  <div class="app-container hidden" id="main-app">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-glow"></div>
+        <i data-lucide="zap" class="logo-icon"></i>
+        <h1>Outreach<span>Flow</span></h1>
+      </div>
+      <div class="header-actions">
+        <span id="user-display" class="user-display">Hello, guest</span>
+        <div id="mode-badge" class="badge mock-mode">
+          <span class="dot animate-pulse"></span>
+          <span class="badge-text">Simulation Active</span>
+        </div>
+        <button id="toggle-settings-btn" class="btn btn-secondary">
+          <i data-lucide="settings"></i> Keys
+        </button>
+        <button id="logout-btn" class="btn btn-danger">
+          <i data-lucide="log-out"></i> Logout
+        </button>
+      </div>
+    </header>
+
+    <!-- App Navigation Tabs -->
+    <nav class="app-nav">
+      <button id="tab-pipeline" class="tab-btn active"><i data-lucide="play"></i> Campaign Pipeline</button>
+      <button id="tab-templates" class="tab-btn"><i data-lucide="edit-3"></i> Template Manager</button>
+      <button id="tab-analytics" class="tab-btn"><i data-lucide="bar-chart-3"></i> Analytics Dashboard</button>
+    </nav>
+
+    <!-- Settings Drawer (Collapsible) -->
+    <section id="settings-panel" class="settings-panel hidden">
+      <div class="panel-header">
+        <h2><i data-lucide="sliders"></i> API Key Settings</h2>
+        <button id="close-settings-btn" class="btn-close">&times;</button>
+      </div>
+      <form id="settings-form" class="panel-body">
+        <div class="form-group-row">
+          <div class="toggle-info">
+            <label>Simulation Mode</label>
+            <p style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Runs dry-runs using mock records instead of consuming real API credits.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="mock-mode-switch" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label for="ocean-key"><i data-lucide="globe"></i> Ocean.io API Key</label>
+          <input type="password" id="ocean-key" placeholder="Enter Ocean.io API Key">
+        </div>
+        <div class="form-group">
+          <label for="prospeo-key"><i data-lucide="users"></i> Prospeo API Key</label>
+          <input type="password" id="prospeo-key" placeholder="Enter Prospeo API Key">
+        </div>
+        <div class="form-group">
+          <label for="eazyreach-key"><i data-lucide="link"></i> Eazyreach API Key</label>
+          <input type="password" id="eazyreach-key" placeholder="Enter Eazyreach API Key">
+        </div>
+        <div class="form-group">
+          <label for="brevo-key"><i data-lucide="mail"></i> Brevo API Key</label>
+          <input type="password" id="brevo-key" placeholder="Enter Brevo API Key">
+        </div>
+        <div class="form-group-row-split">
+          <div class="form-group">
+            <label for="sender-name">Sender Name</label>
+            <input type="text" id="sender-name" placeholder="Outreach Bot">
+          </div>
+          <div class="form-group">
+            <label for="sender-email">Sender Email</label>
+            <input type="email" id="sender-email" placeholder="outreach@yourdomain.com">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Save API Configuration</button>
+      </form>
+    </section>
+
+    <!-- Main Workspace -->
+    <main class="app-main">
+      
+      <!-- PIPELINE WORKSPACE -->
+      <div id="pipeline-workspace">
+        <!-- Input Section -->
+        <section class="card pipeline-input-card">
+          <div class="input-header-group">
+            <h2>Launch a New Outreach Campaign</h2>
+            <p>Provide a seed domain to automatically fetch lookalike companies, check active MX records, find key decision-makers, filter suppressions, and execute outreach.</p>
+          </div>
+          <div class="search-box">
+            <div class="input-wrapper">
+              <i data-lucide="globe" class="search-icon"></i>
+              <input type="text" id="seed-domain-input" placeholder="e.g. stripe.com, slack.com, google.com" required>
+            </div>
+            <button id="start-pipeline-btn" class="btn btn-primary btn-lg">
+              <span>Launch Pipeline</span> <i data-lucide="play" class="btn-icon"></i>
+            </button>
+          </div>
+        </section>
+
+        <!-- Stepper / Status Tracker -->
+        <div id="pipeline-stepper" class="pipeline-stepper hidden">
+          <div class="step" data-step="1">
+            <div class="step-circle"><i data-lucide="search"></i></div>
+            <div class="step-label">Ocean.io Lookalikes</div>
+          </div>
+          <div class="step-connector"></div>
+          <div class="step" data-step="2">
+            <div class="step-circle"><i data-lucide="users"></i></div>
+            <div class="step-label">Prospeo Contacts</div>
+          </div>
+          <div class="step-connector"></div>
+          <div class="step" data-step="3">
+            <div class="step-circle"><i data-lucide="mail-search"></i></div>
+            <div class="step-label">Eazyreach Emails</div>
+          </div>
+          <div class="step-connector"></div>
+          <div class="step" data-step="4">
+            <div class="step-circle"><i data-lucide="shield-check"></i></div>
+            <div class="step-label">Safety Checkpoint</div>
+          </div>
+          <div class="step-connector"></div>
+          <div class="step" data-step="5">
+            <div class="step-circle"><i data-lucide="send"></i></div>
+            <div class="step-label">Brevo Send</div>
+          </div>
+        </div>
+
+        <!-- Live Log/Console Drawer -->
+        <section id="console-drawer" class="card console-drawer hidden">
+          <div class="console-header" id="console-toggle">
+            <h3><span class="console-dot"></span> Live Pipeline Terminal</h3>
+            <i data-lucide="chevron-down" id="console-chevron"></i>
+          </div>
+          <div class="console-body" id="console-body">
+            <div class="log-line text-info">> Ready to execute pipeline. Input seed domain above to begin.</div>
+          </div>
+        </section>
+
+        <!-- Step Result Display Containers -->
+        <div class="results-container">
+          
+          <!-- Stage 1 View: Ocean.io Lookalikes -->
+          <section id="stage-1-view" class="card stage-result-card hidden">
+            <div class="card-header">
+              <h3><i data-lucide="network"></i> Ocean.io Lookalike Company Domains (MX Resolved)</h3>
+              <span id="domains-count-badge" class="count-badge">0</span>
+            </div>
+            <div class="card-body">
+              <div id="domains-list-tags" class="tag-cloud"></div>
+            </div>
+          </section>
+
+          <!-- Stage 2 View: Prospeo Decision Makers -->
+          <section id="stage-2-view" class="card stage-result-card hidden">
+            <div class="card-header">
+              <h3><i data-lucide="contact-2"></i> Prospeo Decision-Makers Identified</h3>
+              <span id="leads-count-badge" class="count-badge">0</span>
+            </div>
+            <div class="card-body">
+              <div id="leads-list-cards" class="leads-grid"></div>
+            </div>
+          </section>
+
+          <!-- Stage 3/Checkpoint View: Safety Checkpoint Table -->
+          <section id="checkpoint-view" class="card stage-result-card hidden">
+            <div class="card-header-split">
+              <div class="header-left">
+                <span class="badge warning-badge">STAGE 3 COMPLETE</span>
+                <h2>🚨 Safety Checkpoint: Review Leads & Launch</h2>
+                <p>The system has compiled verified emails and personalized drafts matching prospect roles. Check/uncheck boxes, click 'Edit Draft' to customize email contents, and launch when ready.</p>
+              </div>
+              <div class="header-actions-inline">
+                <button id="btn-abort-campaign" class="btn btn-danger">Abort Campaign</button>
+                <button id="btn-trigger-brevo" class="btn btn-success btn-lg glow-green">
+                  <i data-lucide="send"></i> Confirm & Launch Campaign
+                </button>
+              </div>
+            </div>
+            <div class="checkpoint-filters">
+              <div class="search-input-wrapper">
+                <i data-lucide="search" class="filter-search-icon"></i>
+                <input type="text" id="checkpoint-search" placeholder="Search leads by name, title, or company...">
+              </div>
+              <div class="lead-summary-stats">
+                <span>Total Leads: <strong id="total-checkpoint-count">0</strong></span>
+                <span>Selected: <strong id="selected-checkpoint-count" class="text-cyan">0</strong></span>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table class="leads-table" id="leads-table">
+                <thead>
+                  <tr>
+                    <th width="40"><input type="checkbox" id="select-all-leads" checked></th>
+                    <th>Name</th>
+                    <th>Title / Position</th>
+                    <th>Company</th>
+                    <th>LinkedIn Profile</th>
+                    <th>Verified Email</th>
+                    <th>Personalized Email Draft</th>
+                    <th width="60">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="leads-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- Stage 4 View: Brevo Complete -->
+          <section id="brevo-complete-view" class="card stage-result-card hidden">
+            <div class="campaign-summary-center">
+              <div class="success-icon-glow">
+                <i data-lucide="check-check" class="success-check"></i>
+              </div>
+              <h1>Outreach Campaign Dispatched!</h1>
+              <p>Your dynamic cold outreach has been successfully executed via Brevo.</p>
+              
+              <div class="metrics-row">
+                <div class="metric-card">
+                  <span class="metric-label">Total Sent</span>
+                  <span class="metric-value" id="stats-total">0</span>
+                </div>
+                <div class="metric-card">
+                  <span class="metric-label">Success Deliveries</span>
+                  <span class="metric-value text-green" id="stats-success">0</span>
+                </div>
+                <div class="metric-card">
+                  <span class="metric-label">Bounces/Failed</span>
+                  <span class="metric-value text-red" id="stats-failed">0</span>
+                </div>
+              </div>
+              <button id="btn-run-another" class="btn btn-secondary btn-lg">Run Another Campaign</button>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- TEMPLATE MANAGER WORKSPACE -->
+      <div id="templates-workspace" class="hidden">
+        <section class="card templates-card">
+          <div class="card-header-split">
+            <div class="header-left">
+              <h2><i data-lucide="edit-3" style="color: var(--color-cyan);"></i> Dynamic Email Templates by Position</h2>
+              <p>Customize email drafts sent to prospects based on their job keywords. Placeholders: <code>{{firstName}}</code>, <code>{{lastName}}</code>, <code>{{title}}</code>, <code>{{company}}</code>, <code>{{senderName}}</code>.</p>
+            </div>
+          </div>
+
+          <div class="templates-grid">
+            <!-- Dynamic Templates Form blocks -->
+            <div id="templates-loading" class="text-cyan">Loading templates...</div>
+            <div id="templates-list-container" class="hidden">
+              <!-- Dynamically populated forms -->
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ANALYTICS DASHBOARD WORKSPACE -->
+      <div id="analytics-workspace" class="hidden">
+        <section class="card analytics-card">
+          <h2><i data-lucide="bar-chart-3" style="color: var(--color-cyan); margin-right: 8px;"></i> Campaign Performance Metrics</h2>
+          <p>Real-time analytics aggregating your cold outreach statistics, bounce logs, and historical campaigns.</p>
+          
+          <div class="metrics-row" style="margin-top: 24px;">
+            <div class="metric-card">
+              <span class="metric-label">Total Campaigns</span>
+              <span class="metric-value text-cyan" id="analytics-campaigns-count">0</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Leads Processed</span>
+              <span class="metric-value" id="analytics-leads-count">0</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Delivered Outreach</span>
+              <span class="metric-value text-green" id="analytics-delivered-count">0</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Bounces / Blocked</span>
+              <span class="metric-value text-red" id="analytics-bounces-count">0</span>
+            </div>
+          </div>
+
+          <h3 style="margin-top: 40px; margin-bottom: 16px; font-family: var(--font-display);">Historical Dispatch Logs</h3>
+          <div class="table-wrapper">
+            <table class="leads-table">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Seed Domain</th>
+                  <th>Total Leads</th>
+                  <th>Delivered</th>
+                  <th>Failed</th>
+                  <th>Simulation</th>
+                </tr>
+              </thead>
+              <tbody id="analytics-history-table-body">
+                <!-- Dynamically populated past runs -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>&copy; 2026 OutreachFlow SaaS. Powered by Ocean.io, Prospeo, Eazyreach, and Brevo APIs.</p>
+    </footer>
+  </div>
+
+  <!-- Draft Editor Modal Overlay -->
+  <div id="draft-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i data-lucide="mail-edit" class="text-cyan"></i> Customize Lead Email Draft</h3>
+        <button id="close-draft-modal-btn" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="lead-meta-row">
+          <div><strong>Recipient:</strong> <span id="modal-lead-name">Jane Doe</span></div>
+          <div><strong>Position:</strong> <span id="modal-lead-title">VP Growth</span></div>
+          <div><strong>Company:</strong> <span id="modal-lead-company">Adyen</span></div>
+        </div>
+        <div class="form-group">
+          <label for="modal-email-subject">Subject Line</label>
+          <input type="text" id="modal-email-subject" placeholder="Enter subject line">
+        </div>
+        <div class="form-group">
+          <label for="modal-email-body">Email Body (Rich personalization)</label>
+          <textarea id="modal-email-body" rows="10" placeholder="Enter personalized message..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-save-draft" class="btn btn-primary">Save Personalized Draft</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>

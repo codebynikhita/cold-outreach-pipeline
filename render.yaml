@@ -1,0 +1,21 @@
+# Render Blueprint Specification for OutreachFlow SaaS
+services:
+  - type: web
+    name: outreach-flow-saas
+    env: node
+    plan: free # Can be changed to paid plans as needed
+    buildCommand: npm install
+    startCommand: npm run server
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: JWT_SECRET
+        generateValue: true # Generates a secure random JWT secret automatically
+      - key: ENCRYPTION_SECRET
+        generateValue: true # Generates a secure random AES-256 master key automatically
+      - key: MOCK_MODE
+        value: "true" # Keep simulation active by default; users can toggle or configure keys in the dashboard
+    disk:
+      name: outreach-data-vol
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1

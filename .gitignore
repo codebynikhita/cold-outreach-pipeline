@@ -1,0 +1,27 @@
+# Dependency directories
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Local databases (Render persistent disks will manage these in production)
+data/users.json
+data/campaigns.json
+data/templates.json
+data/suppression_list.json
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.system_generated/
+logs/
+scratch/
+
+# OS files
+.DS_Store
+Thumbs.db
