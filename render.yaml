@@ -1,9 +1,9 @@
-# Render Blueprint Specification for OutreachFlow SaaS
+# Render Blueprint Specification for OutreachFlow SaaS (Free Tier Compatible)
 services:
   - type: web
     name: outreach-flow-saas
     env: node
-    plan: free # Can be changed to paid plans as needed
+    plan: free # Deploys on Render's 100% Free Tier
     buildCommand: npm install
     startCommand: npm run server
     envVars:
@@ -15,7 +15,9 @@ services:
         generateValue: true # Generates a secure random AES-256 master key automatically
       - key: MOCK_MODE
         value: "true" # Keep simulation active by default; users can toggle or configure keys in the dashboard
-    disk:
-      name: outreach-data-vol
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1
+    # Note: Disk mounting is disabled to support Render's Free Tier. 
+    # To enable persistent databases in the future, upgrade plan to "starter" and uncomment the block below:
+    # disk:
+    #   name: outreach-data-vol
+    #   mountPath: /opt/render/project/src/data
+    #   sizeGB: 1
