@@ -55,6 +55,46 @@ function hashPassword(password, salt) {
   return crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
 }
 
+// Input Validation RegEx Patterns
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
+const DOMAIN_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\.[a-zA-Z]{2,6}$/;
+
+// HTML Sanitizer to prevent XSS injection vulnerabilities
+function sanitizeInput(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// Custom in-memory rate limiting middleware
+const rateLimitStore = new Map();
+function rateLimiter(windowMs, maxRequests) {
+  return (req, res, next) => {
+    const ip = req.ip;
+    const now = Date.now();
+    
+    if (!rateLimitStore.has(ip)) {
+      rateLimitStore.set(ip, []);
+    }
+    
+    let timestamps = rateLimitStore.get(ip);
+    timestamps = timestamps.filter(t => now - t < windowMs);
+    
+    if (timestamps.length >= maxRequests) {
+      return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    }
+    
+    timestamps.push(now);
+    rateLimitStore.set(ip, timestamps);
+    next();
+  };
+}
+
 // Authentication Middleware (Scoped JWT validation)
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
@@ -116,14 +156,22 @@ function seedUserTemplates(userId) {
 // Authentication Endpoints
 // -------------------------------------------------------------
 
-app.post('/api/auth/signup', (req, res) => {
+app.post('/api/auth/signup', rateLimiter(1 * 60 * 1000, 10), (req, res) => {
   const { email, password, username } = req.body;
   if (!email || !password || !username) {
     return res.status(400).json({ error: 'Email, username, and password are required.' });
   }
 
-  if (!email.includes('@')) {
+  if (!EMAIL_REGEX.test(email)) {
     return res.status(400).json({ error: 'Please enter a valid email address.' });
+  }
+
+  if (!USERNAME_REGEX.test(username)) {
+    return res.status(400).json({ error: 'Username must be alphanumeric and between 3 to 20 characters.' });
+  }
+
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
   }
 
   const users = readUsers();
@@ -162,10 +210,14 @@ app.post('/api/auth/signup', (req, res) => {
   res.json({ success: true, message: 'Account created successfully! Please log in.' });
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', rateLimiter(1 * 60 * 1000, 10), (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required.' });
+  }
+
+  if (!EMAIL_REGEX.test(email)) {
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
   }
 
   const users = readUsers();
@@ -258,8 +310,8 @@ app.put('/api/templates/:id', authenticateToken, (req, res) => {
     return res.status(404).json({ error: 'Template not found.' });
   }
 
-  templates[templateIdx].subject = subject;
-  templates[templateIdx].body = body;
+  templates[templateIdx].subject = sanitizeInput(subject);
+  templates[templateIdx].body = sanitizeInput(body);
   writeTemplates(templates);
 
   res.json({ success: true, template: templates[templateIdx] });
@@ -329,9 +381,13 @@ function releaseLock(userId, seedDomain) {
 // Outreach Pipeline (Auth, Decrypted Keys, Suppressions, Locks)
 // -------------------------------------------------------------
 
-app.post('/api/pipeline/domains', authenticateToken, async (req, res) => {
+app.post('/api/pipeline/domains', authenticateToken, rateLimiter(1 * 60 * 1000, 15), async (req, res) => {
   const { seedDomain } = req.body;
   if (!seedDomain) return res.status(400).json({ error: 'Seed domain is required.' });
+
+  if (!DOMAIN_REGEX.test(seedDomain.trim())) {
+    return res.status(400).json({ error: 'Invalid seed domain format. Please enter a valid domain (e.g. stripe.com).' });
+  }
 
   // 1. Concurrency double-submit lock check
   if (!checkAndAcquireLock(req.user.id, seedDomain)) {
@@ -355,7 +411,7 @@ app.post('/api/pipeline/domains', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/pipeline/leads', authenticateToken, async (req, res) => {
+app.post('/api/pipeline/leads', authenticateToken, rateLimiter(1 * 60 * 1000, 15), async (req, res) => {
   const { domains } = req.body;
   if (!Array.isArray(domains) || domains.length === 0) {
     return res.status(400).json({ error: 'Domains list is required.' });
@@ -376,7 +432,7 @@ app.post('/api/pipeline/leads', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/pipeline/enrich', authenticateToken, async (req, res) => {
+app.post('/api/pipeline/enrich', authenticateToken, rateLimiter(1 * 60 * 1000, 15), async (req, res) => {
   const { leads } = req.body;
   if (!Array.isArray(leads) || leads.length === 0) {
     return res.status(400).json({ error: 'Leads list is required.' });
@@ -455,7 +511,7 @@ app.post('/api/pipeline/enrich', authenticateToken, async (req, res) => {
 });
 
 // Stage 4 Endpoint: Brevo - logs metrics & records campaign analytics
-app.post('/api/pipeline/send', authenticateToken, async (req, res) => {
+app.post('/api/pipeline/send', authenticateToken, rateLimiter(1 * 60 * 1000, 15), async (req, res) => {
   const { leads, seedDomain } = req.body;
   if (!Array.isArray(leads) || leads.length === 0) {
     return res.status(400).json({ error: 'Approved leads list is required.' });
@@ -471,7 +527,14 @@ app.post('/api/pipeline/send', authenticateToken, async (req, res) => {
   config.senderName = keys.senderName || config.senderName;
 
   try {
-    const summary = await sendOutreachEmails(leads);
+    // Escape and sanitize email templates to avoid script injection vulnerabilities
+    const sanitizedLeads = leads.map(lead => ({
+      ...lead,
+      draftSubject: sanitizeInput(lead.draftSubject),
+      draftBody: sanitizeInput(lead.draftBody)
+    }));
+
+    const summary = await sendOutreachEmails(sanitizedLeads);
     
     // Save Campaign History Analytics
     const campaigns = readCampaigns();
