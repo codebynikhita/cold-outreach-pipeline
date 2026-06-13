@@ -68,7 +68,8 @@ export async function enrichEmails(leads) {
       }
 
       // Real API integration
-      const isHunterKey = /^[0-9a-fA-F]{40}$/.test(config.eazyreachApiKey.trim()) || config.eazyreachApiKey.trim() === 'test-api-key';
+      const cleanKey = config.eazyreachApiKey.trim().replace(/^x/i, '');
+      const isHunterKey = /^[0-9a-fA-F]{40}$/.test(cleanKey) || cleanKey === 'test-api-key';
       let emailResolved = null;
 
       if (isHunterKey) {
@@ -80,7 +81,7 @@ export async function enrichEmails(leads) {
               domain: lead.company.toLowerCase(),
               first_name: lead.firstName,
               last_name: lead.lastName,
-              api_key: config.eazyreachApiKey.trim(),
+              api_key: cleanKey,
             },
             timeout: 10000,
           }
