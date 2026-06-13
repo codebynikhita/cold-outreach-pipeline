@@ -144,7 +144,7 @@ function seedUserTemplates(userId) {
       positionKeyword: 'general',
       name: 'General Template',
       subject: 'Quick question for {{firstName}} re: {{company}}',
-      body: 'Hi {{firstName}},\n\nI was browsing LinkedIn and noticed your profile as {{title}} at {{company}}.\n\nI wanted to reach out and see how you currently handle outbound lead generation. We have built an automated modular stack that integrates Ocean.io, Prospeo, Eazyreach, and Brevo to run cold outreach hands-free.\n\nWould you be open to a quick introduction?\n\nBest,\n{{senderName}}'
+      body: 'Hi {{firstName}},\n\nI was browsing LinkedIn and noticed your profile as {{title}} at {{company}}.\n\nI wanted to reach out and see how you currently handle outbound lead generation. We have built an automated modular stack that integrates Prospeo, Hunter.io, and Brevo to run cold outreach hands-free.\n\nWould you be open to a quick introduction?\n\nBest,\n{{senderName}}'
     }
   ];
 

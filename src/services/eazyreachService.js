@@ -15,11 +15,11 @@ const SUPPRESSION_FILE = path.join(__dirname, '..', '..', 'data', 'suppression_l
  */
 export async function enrichEmails(leads) {
   if (!Array.isArray(leads) || leads.length === 0) {
-    console.log('[Stage 3] No leads provided for Eazyreach email enrichment. Skipping.');
+    console.log('[Stage 3] No leads provided for email lookup. Skipping.');
     return [];
   }
 
-  console.log(`[Stage 3] Running Eazyreach enrichment for ${leads.length} leads...`);
+  console.log(`[Stage 3] Finding emails via Hunter.io for ${leads.length} leads...`);
   const enrichedLeads = [];
 
   const suppressionList = fs.existsSync(SUPPRESSION_FILE)
@@ -136,7 +136,7 @@ export async function enrichEmails(leads) {
     }
   }
 
-  console.log(`[Stage 3] Email enrichment complete. Found ${enrichedLeads.length}/${leads.length} verified emails.`);
+  console.log(`[Stage 3] Email lookup complete. Found ${enrichedLeads.length}/${leads.length} verified emails.`);
   return enrichedLeads;
 }
 

@@ -9,10 +9,10 @@ import { filterValidMailDomains } from '../utils/dnsValidator.js';
  */
 export async function getLookalikeDomains(seedDomain) {
   if (!seedDomain) {
-    throw new Error('Seed domain is required for Ocean.io lookalike search.');
+    throw new Error('Seed domain is required for lookalike search.');
   }
 
-  console.log(`[Stage 1] Querying Ocean.io for lookalikes of: "${seedDomain}"...`);
+  console.log(`[Stage 1] Finding lookalike domains for: "${seedDomain}"...`);
   let lookalikes = [];
 
   const isMock = config.mockMode || 

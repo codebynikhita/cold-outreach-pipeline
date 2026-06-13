@@ -566,9 +566,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     log(`Initializing dynamic cold-outreach campaign for domain: "${seedDomain}"`);
 
-    // 1. Stage 1: Ocean.io (Lookalikes)
+    // 1. Stage 1: Company Lookalikes (Simulated)
     setStepStatus(1, 'active');
-    log('Stage 1: Querying Ocean.io for competitors...');
+    log('Stage 1: Finding target lookalike domains (Simulated)...');
     let domains = [];
     try {
       const res = await authFetch('/api/pipeline/domains', {
@@ -581,17 +581,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
       domains = data.domains || [];
       if (domains.length === 0) {
-        log('Ocean.io found 0 lookalike company domains. Pipeline stopped.', 'warning');
+        log('Stage 1 found 0 lookalike company domains. Pipeline stopped.', 'warning');
         setStepStatus(1, 'error');
         await abortCampaignLock();
         startBtn.disabled = false;
         return;
       }
-      log(`Ocean.io complete. Discovered ${domains.length} lookalike domains: [${domains.join(', ')}]`, 'success');
+      log(`Stage 1 complete. Discovered ${domains.length} lookalike domains: [${domains.join(', ')}]`, 'success');
       setStepStatus(1, 'completed');
       renderStage1Tags(domains);
     } catch (err) {
-      log(`Stage 1 Ocean.io search failed: ${err.message}`, 'danger');
+      log(`Stage 1 search failed: ${err.message}`, 'danger');
       setStepStatus(1, 'error');
       await abortCampaignLock();
       startBtn.disabled = false;
@@ -630,9 +630,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 3. Stage 3: Eazyreach (Enrichment + Position Template Personalization)
+    // 3. Stage 3: Hunter.io Emails
     setStepStatus(3, 'active');
-    log('Stage 3: Running Eazyreach email resolution & position-based draft compiling...');
+    log('Stage 3: Finding email addresses via Hunter.io...');
     let enrichedLeads = [];
     try {
       const res = await authFetch('/api/pipeline/enrich', {
@@ -645,16 +645,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       enrichedLeads = data.leads || [];
       if (enrichedLeads.length === 0) {
-        log('Eazyreach resolved 0 verified emails. Pipeline stopped.', 'warning');
+        log('Hunter.io resolved 0 verified emails. Pipeline stopped.', 'warning');
         setStepStatus(3, 'error');
         await abortCampaignLock();
         startBtn.disabled = false;
         return;
       }
-      log(`Eazyreach complete. Resolved ${enrichedLeads.length}/${rawLeads.length} verified emails and drafted personalized messages.`, 'success');
+      log(`Stage 3 complete. Resolved ${enrichedLeads.length}/${rawLeads.length} verified emails and drafted personalized messages.`, 'success');
       setStepStatus(3, 'completed');
     } catch (err) {
-      log(`Stage 3 Eazyreach enrichment failed: ${err.message}`, 'danger');
+      log(`Stage 3 email lookup failed: ${err.message}`, 'danger');
       setStepStatus(3, 'error');
       await abortCampaignLock();
       startBtn.disabled = false;

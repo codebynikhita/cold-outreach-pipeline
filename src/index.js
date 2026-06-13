@@ -50,18 +50,18 @@ async function main() {
 
   try {
     // -------------------------------------------------------------
-    // Stage 1: Ocean.io (Lookalike Domains Search)
+    // Stage 1: Lookalikes (Simulated)
     // -------------------------------------------------------------
     let domains = [];
     try {
       domains = await getLookalikeDomains(seedDomain);
       if (domains.length === 0) {
-        console.log('\n⚠️ No lookalike company domains returned by Ocean.io. Pipeline stopping.');
+        console.log('\n⚠️ No lookalike company domains returned in Stage 1. Pipeline stopping.');
         process.exit(0);
       }
       console.log(`\x1b[32m✔ [Stage 1 Complete] Found lookalike domains: ${domains.join(', ')}\x1b[0m\n`);
     } catch (err) {
-      console.error('\x1b[31m❌ Error in Stage 1 (Ocean.io):', err.message, '\x1b[0m');
+      console.error('\x1b[31m❌ Error in Stage 1:', err.message, '\x1b[0m');
       console.error('Aborting pipeline run.');
       process.exit(1);
     }
@@ -84,18 +84,18 @@ async function main() {
     }
 
     // -------------------------------------------------------------
-    // Stage 3: Eazyreach (LinkedIn to Email Enrichment)
+    // Stage 3: Hunter.io Emails
     // -------------------------------------------------------------
     let enrichedLeads = [];
     try {
       enrichedLeads = await enrichEmails(rawLeads);
       if (enrichedLeads.length === 0) {
-        console.log('\n⚠️ No verified emails were resolved by Eazyreach. Pipeline stopping.');
+        console.log('\n⚠️ No verified emails were resolved in Stage 3. Pipeline stopping.');
         process.exit(0);
       }
       console.log(`\x1b[32m✔ [Stage 3 Complete] Resolved ${enrichedLeads.length} verified work emails.\x1b[0m\n`);
     } catch (err) {
-      console.error('\x1b[31m❌ Error in Stage 3 (Eazyreach):', err.message, '\x1b[0m');
+      console.error('\x1b[31m❌ Error in Stage 3:', err.message, '\x1b[0m');
       console.error('Aborting pipeline run.');
       process.exit(1);
     }
