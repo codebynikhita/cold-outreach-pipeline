@@ -554,6 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     activeSeedDomain = seedDomain;
+    startBtn.disabled = true;
 
     resetViews();
     clearLogs();
@@ -583,6 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
         log('Ocean.io found 0 lookalike company domains. Pipeline stopped.', 'warning');
         setStepStatus(1, 'error');
         await abortCampaignLock();
+        startBtn.disabled = false;
         return;
       }
       log(`Ocean.io complete. Discovered ${domains.length} lookalike domains: [${domains.join(', ')}]`, 'success');
@@ -592,6 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
       log(`Stage 1 Ocean.io search failed: ${err.message}`, 'danger');
       setStepStatus(1, 'error');
       await abortCampaignLock();
+      startBtn.disabled = false;
       return;
     }
 
@@ -613,6 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
         log('Prospeo returned 0 decision-makers. Pipeline stopped.', 'warning');
         setStepStatus(2, 'error');
         await abortCampaignLock();
+        startBtn.disabled = false;
         return;
       }
       log(`Prospeo complete. Discovered ${rawLeads.length} leads with LinkedIn profiles.`, 'success');
@@ -622,6 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
       log(`Stage 2 Prospeo lookup failed: ${err.message}`, 'danger');
       setStepStatus(2, 'error');
       await abortCampaignLock();
+      startBtn.disabled = false;
       return;
     }
 
@@ -643,6 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
         log('Eazyreach resolved 0 verified emails. Pipeline stopped.', 'warning');
         setStepStatus(3, 'error');
         await abortCampaignLock();
+        startBtn.disabled = false;
         return;
       }
       log(`Eazyreach complete. Resolved ${enrichedLeads.length}/${rawLeads.length} verified emails and drafted personalized messages.`, 'success');
@@ -651,6 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
       log(`Stage 3 Eazyreach enrichment failed: ${err.message}`, 'danger');
       setStepStatus(3, 'error');
       await abortCampaignLock();
+      startBtn.disabled = false;
       return;
     }
 
@@ -909,9 +916,11 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('stats-total').innerText = approvedLeads.length;
       document.getElementById('stats-success').innerText = summary.successCount;
       document.getElementById('stats-failed').innerText = summary.failCount;
+      startBtn.disabled = false;
     } catch (err) {
       log(`Brevo send failed: ${err.message}`, 'danger');
       setStepStatus(5, 'error');
+      startBtn.disabled = false;
     }
   });
 
@@ -921,6 +930,7 @@ document.addEventListener('DOMContentLoaded', () => {
       resetViews();
       stepper.classList.add('hidden');
       log('Campaign cancelled at Safety Checkpoint.', 'danger');
+      startBtn.disabled = false;
     }
   });
 
@@ -929,6 +939,7 @@ document.addEventListener('DOMContentLoaded', () => {
     seedInput.value = '';
     stepper.classList.add('hidden');
     consoleDrawer.classList.add('hidden');
+    startBtn.disabled = false;
   });
 
   // Initial Auth Boot trigger
