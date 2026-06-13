@@ -27,7 +27,7 @@ export function validateConfig() {
   const keysToVerify = [
     { name: 'OCEAN_API_KEY', val: config.oceanApiKey, stage: 'Stage 1 (Ocean.io lookalikes)' },
     { name: 'PROSPEO_API_KEY', val: config.prospeoApiKey, stage: 'Stage 2 (Prospeo decision-makers)' },
-    { name: 'EAZYREACH_API_KEY', val: config.eazyreachApiKey, stage: 'Stage 3 (Eazyreach email finder)' },
+    { name: 'EAZYREACH_API_KEY', val: config.eazyreachApiKey, stage: 'Stage 3 (Hunter.io / Eazyreach email finder)' },
     { name: 'BREVO_API_KEY', val: config.brevoApiKey, stage: 'Stage 4 (Brevo email sender)' },
   ];
 

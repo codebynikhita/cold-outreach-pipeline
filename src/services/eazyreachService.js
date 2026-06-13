@@ -68,23 +68,44 @@ export async function enrichEmails(leads) {
       }
 
       // Real API integration
-      const response = await axios.post(
-        'https://api.eazyreach.io/v1/enrich',
-        {
-          linkedin_url: lead.linkedinUrl,
-          enrich_fields: ['email'],
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${config.eazyreachApiKey}`,
-            'Content-Type': 'application/json',
+      const isHunterKey = /^[0-9a-fA-F]{40}$/.test(config.eazyreachApiKey.trim()) || config.eazyreachApiKey.trim() === 'test-api-key';
+      let emailResolved = null;
+
+      if (isHunterKey) {
+        console.log(`   🔎 Querying Hunter.io API for: ${lead.firstName} ${lead.lastName} @ ${lead.company}...`);
+        const response = await axios.get(
+          'https://api.hunter.io/v2/email-finder',
+          {
+            params: {
+              domain: lead.company.toLowerCase(),
+              first_name: lead.firstName,
+              last_name: lead.lastName,
+              api_key: config.eazyreachApiKey.trim(),
+            },
+            timeout: 10000,
+          }
+        );
+        emailResolved = response.data?.data?.email;
+      } else {
+        console.log(`   🔎 Querying Eazyreach API for: ${lead.firstName} ${lead.lastName}...`);
+        const response = await axios.post(
+          'https://api.eazyreach.io/v1/enrich',
+          {
+            linkedin_url: lead.linkedinUrl,
+            enrich_fields: ['email'],
           },
-          timeout: 10000,
-        }
-      );
+          {
+            headers: {
+              'Authorization': `Bearer ${config.eazyreachApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            timeout: 10000,
+          }
+        );
+        emailResolved = response.data?.email || response.data?.data?.email;
+      }
 
       // Check response and extract email
-      const emailResolved = response.data?.email || response.data?.data?.email;
       if (emailResolved) {
         const emailLower = emailResolved.toLowerCase();
         const domainLower = lead.company.toLowerCase();
@@ -102,7 +123,7 @@ export async function enrichEmails(leads) {
           });
         }
       } else {
-        console.log(` 🔎 Email not found for ${lead.firstName} ${lead.lastName} via Eazyreach.`);
+        console.log(` 🔎 Email not found for ${lead.firstName} ${lead.lastName} via ${isHunterKey ? 'Hunter.io' : 'Eazyreach'}.`);
       }
 
       // Respect API rate limits with a small sleep
@@ -127,9 +148,9 @@ function handleEazyreachError(error) {
     const data = error.response.data;
     console.error(`Status code: ${status}`, data);
     if (status === 401) {
-      console.error('🔑 Invalid Eazyreach API key. Check your Bearer authorization.');
+      console.error('🔑 Invalid Hunter.io / Eazyreach API key. Check your credentials.');
     } else if (status === 429) {
-      console.error('⏳ Eazyreach API rate limit hit. Slow down requests.');
+      console.error('⏳ API rate limit hit. Slow down requests.');
     }
   } else {
     console.error('Message:', error.message);
