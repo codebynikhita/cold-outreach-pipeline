@@ -276,7 +276,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const config = await res.json();
       
       mockModeSwitch.checked = config.mockMode;
-      document.getElementById('ocean-key').value = config.oceanApiKey;
       document.getElementById('prospeo-key').value = config.prospeoApiKey;
       document.getElementById('eazyreach-key').value = config.eazyreachApiKey;
       document.getElementById('brevo-key').value = config.brevoApiKey;
@@ -305,7 +304,6 @@ document.addEventListener('DOMContentLoaded', () => {
   settingsForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const mockMode = mockModeSwitch.checked;
-    const oceanApiKey = document.getElementById('ocean-key').value;
     const prospeoApiKey = document.getElementById('prospeo-key').value;
     const eazyreachApiKey = document.getElementById('eazyreach-key').value;
     const brevoApiKey = document.getElementById('brevo-key').value;
@@ -318,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mockMode,
-          oceanApiKey,
+          oceanApiKey: 'mock',
           prospeoApiKey,
           eazyreachApiKey,
           brevoApiKey,
