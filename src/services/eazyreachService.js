@@ -35,7 +35,12 @@ export async function enrichEmails(leads) {
     try {
       console.log(` - Enriching contact: ${lead.firstName} ${lead.lastName} (${lead.linkedinUrl})`);
 
-      if (config.mockMode) {
+      const isMock = config.mockMode || 
+                     !config.eazyreachApiKey || 
+                     ['mock', 'simulation', ''].includes(config.eazyreachApiKey.toLowerCase().trim()) || 
+                     config.eazyreachApiKey.toLowerCase().startsWith('your_');
+
+      if (isMock) {
         // Simulate API network latency
         await new Promise(resolve => setTimeout(resolve, 600));
 

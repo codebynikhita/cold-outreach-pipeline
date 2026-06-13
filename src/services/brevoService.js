@@ -35,7 +35,12 @@ export async function sendOutreachEmails(leads) {
       </html>
     `;
 
-    if (config.mockMode) {
+    const isMock = config.mockMode || 
+                   !config.brevoApiKey || 
+                   ['mock', 'simulation', ''].includes(config.brevoApiKey.toLowerCase().trim()) || 
+                   config.brevoApiKey.toLowerCase().startsWith('your_');
+
+    if (isMock) {
       // Simulate API network latency
       await new Promise(resolve => setTimeout(resolve, 400));
       console.log(`   \x1b[32m[MOCK SENT]\x1b[0m Email sent to ${lead.verifiedEmail}`);

@@ -19,7 +19,12 @@ export async function findDecisionMakers(domains) {
     try {
       console.log(` - Finding decision-makers for domain: "${domain}"`);
 
-      if (config.mockMode) {
+      const isMock = config.mockMode || 
+                     !config.prospeoApiKey || 
+                     ['mock', 'simulation', ''].includes(config.prospeoApiKey.toLowerCase().trim()) || 
+                     config.prospeoApiKey.toLowerCase().startsWith('your_');
+
+      if (isMock) {
         // Simulate API network latency
         await new Promise(resolve => setTimeout(resolve, 800));
 

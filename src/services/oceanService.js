@@ -15,7 +15,12 @@ export async function getLookalikeDomains(seedDomain) {
   console.log(`[Stage 1] Querying Ocean.io for lookalikes of: "${seedDomain}"...`);
   let lookalikes = [];
 
-  if (config.mockMode) {
+  const isMock = config.mockMode || 
+                 !config.oceanApiKey || 
+                 ['mock', 'simulation', ''].includes(config.oceanApiKey.toLowerCase().trim()) || 
+                 config.oceanApiKey.toLowerCase().startsWith('your_');
+
+  if (isMock) {
     // Simulate API network latency
     await new Promise(resolve => setTimeout(resolve, 1200));
 

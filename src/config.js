@@ -22,30 +22,30 @@ export function validateConfig() {
   }
 
   const missingKeys = [];
-  const placeholderPatterns = [/your_/i, /mock_/i];
+  const placeholderPatterns = [/your_/i, /mock_/i, /simulation/i];
 
   const keysToVerify = [
-    { name: 'OCEAN_API_KEY', val: config.oceanApiKey },
-    { name: 'PROSPEO_API_KEY', val: config.prospeoApiKey },
-    { name: 'EAZYREACH_API_KEY', val: config.eazyreachApiKey },
-    { name: 'BREVO_API_KEY', val: config.brevoApiKey },
+    { name: 'OCEAN_API_KEY', val: config.oceanApiKey, stage: 'Stage 1 (Ocean.io lookalikes)' },
+    { name: 'PROSPEO_API_KEY', val: config.prospeoApiKey, stage: 'Stage 2 (Prospeo decision-makers)' },
+    { name: 'EAZYREACH_API_KEY', val: config.eazyreachApiKey, stage: 'Stage 3 (Eazyreach email finder)' },
+    { name: 'BREVO_API_KEY', val: config.brevoApiKey, stage: 'Stage 4 (Brevo email sender)' },
   ];
 
   for (const item of keysToVerify) {
     if (!item.val || placeholderPatterns.some(pat => pat.test(item.val))) {
-      missingKeys.push(item.name);
+      missingKeys.push(item);
     }
   }
 
   if (missingKeys.length > 0) {
-    console.error('\x1b[31m%s\x1b[0m', '❌ Configuration Validation Failed!');
-    console.error('\x1b[31m%s\x1b[0m', `The following environment variables are missing or have placeholders in your .env:`);
-    missingKeys.forEach(k => console.error(` - ${k}`));
-    console.error('\nEnsure you have configured them correctly in your .env file or set MOCK_MODE=true for testing.\n');
-    return false;
+    console.log('\x1b[33m%s\x1b[0m', '⚠️ Running in HYBRID Fallback Mode:');
+    missingKeys.forEach(k => {
+      console.log(` - ${k.name} is missing or placeholder. ${k.stage} will run in SIMULATED mode.`);
+    });
+  } else {
+    console.log('\x1b[32m%s\x1b[0m', '✅ Configuration successfully validated for full Production (All Real APIs).');
   }
 
-  console.log('\x1b[32m%s\x1b[0m', '✅ Configuration successfully validated for Production (Real API Mode).');
   return true;
 }
 
