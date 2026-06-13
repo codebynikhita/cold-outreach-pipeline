@@ -40,6 +40,20 @@ if (!fs.existsSync(TEMPLATES_FILE)) fs.writeFileSync(TEMPLATES_FILE, '[]');
 if (!fs.existsSync(SUPPRESSION_FILE)) fs.writeFileSync(SUPPRESSION_FILE, '[]');
 if (!fs.existsSync(CAMPAIGNS_FILE)) fs.writeFileSync(CAMPAIGNS_FILE, '[]');
 
+// Database Migration: Automatically clean up old template references on start
+if (fs.existsSync(TEMPLATES_FILE)) {
+  try {
+    let tText = fs.readFileSync(TEMPLATES_FILE, 'utf8');
+    if (tText.includes('Ocean.io, Prospeo, Eazyreach, and Brevo')) {
+      tText = tText.replaceAll('Ocean.io, Prospeo, Eazyreach, and Brevo', 'Prospeo, Hunter.io, and Brevo');
+      fs.writeFileSync(TEMPLATES_FILE, tText, 'utf8');
+      console.log('Migrated templates database successfully.');
+    }
+  } catch (migErr) {
+    console.error('Migration error:', migErr);
+  }
+}
+
 // JSON DB Helpers
 const readUsers = () => JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
 const writeUsers = (users) => fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
